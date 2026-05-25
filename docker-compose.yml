@@ -1,0 +1,44 @@
+services:
+  mysqldb:
+    image: mysql:8.0
+    container_name: ticket_system_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ticket_management
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ticket_system_phpmyadmin
+    restart: always
+    links:
+      - mysqldb
+    environment:
+      PMA_HOST: mysqldb
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysqldb
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: ticket_system_rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"        # Broker communication port (Spring will use this)
+      - "15672:15672"      # Management Web UI Console port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  mysql_data:
+  rabbitmq_data:
